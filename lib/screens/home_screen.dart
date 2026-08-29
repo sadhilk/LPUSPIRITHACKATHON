@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Smart Light AI',
+                        '',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
