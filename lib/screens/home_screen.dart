@@ -1,11 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
-import 'package:path_provider/path_provider.dart';
 import '../main.dart' show AppColors;
 import '../services/device_service.dart';
 
@@ -18,10 +14,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  final AudioRecorder _audioRecorder = AudioRecorder();
   final TextEditingController _textController = TextEditingController();
 
-  bool _isRecording = false;
   bool _isProcessing = false;
   String _statusLabel = '';
   String _transcription = '';
@@ -50,79 +44,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _glowController.dispose();
     _pulseController.dispose();
     _textController.dispose();
-    _audioRecorder.dispose();
     super.dispose();
   }
 
   void _onDeviceUpdate() {
     if (mounted) setState(() {});
-  }
-
-  Future<void> _startRecording() async {
-    if (_isProcessing) return;
-    HapticFeedback.mediumImpact();
-    try {
-      if (await _audioRecorder.hasPermission()) {
-        final dir = await getTemporaryDirectory();
-        final path = '${dir.path}/cmd_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        await _audioRecorder.start(
-          const RecordConfig(encoder: AudioEncoder.aacLc, sampleRate: 16000, bitRate: 64000),
-          path: path,
-        );
-        setState(() {
-          _isRecording = true;
-          _statusLabel = 'Listening...';
-          _transcription = '';
-          _aiResponse = '';
-        });
-        _pulseController.repeat(reverse: true);
-      } else {
-        await Permission.microphone.request();
-      }
-    } catch (e) {
-      debugPrint('Recording error: $e');
-    }
-  }
-
-  Future<void> _stopAndSend() async {
-    if (!_isRecording) return;
-    HapticFeedback.lightImpact();
-    final path = await _audioRecorder.stop();
-    _pulseController.stop();
-    _pulseController.reset();
-    setState(() {
-      _isRecording = false;
-      _isProcessing = true;
-      _statusLabel = 'Processing with AI...';
-    });
-
-    try {
-      if (path != null) {
-        final file = File(path);
-        if (await file.exists()) {
-          final bytes = await file.readAsBytes();
-          final b64 = base64Encode(bytes);
-          final result = await widget.deviceService.sendAudio(b64, mimeType: 'audio/m4a');
-          if (mounted) {
-            setState(() {
-              _isProcessing = false;
-              if (result['success'] == true) {
-                final parsed = result['parsed'] ?? {};
-                _transcription = parsed['transcription'] ?? '';
-                _aiResponse = parsed['response'] ?? 'Done!';
-                _statusLabel = '';
-              } else {
-                _aiResponse = result['error'] ?? 'Error processing audio.';
-                _statusLabel = '';
-              }
-            });
-          }
-          await file.delete();
-        }
-      }
-    } catch (e) {
-      if (mounted) setState(() { _isProcessing = false; _statusLabel = ''; });
-    }
   }
 
   Future<void> _sendText(String text) async {
@@ -169,24 +95,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: AnimatedBuilder(
               animation: _glowAnim,
               builder: (_, __) => Opacity(
-                opacity: _isRecording ? 1.0 : _glowAnim.value * 0.7,
+                opacity: _glowAnim.value * 0.7,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
                       center: const Alignment(0, 1.2),
                       radius: 1.0,
-                      colors: _isRecording
-                          ? [
-                              const Color(0xFFDC2626).withOpacity(0.35),
-                              const Color(0xFFEA580C).withOpacity(0.2),
-                              Colors.transparent,
-                            ]
-                          : [
-                              const Color(0xFF38BDF8).withOpacity(0.3),
-                              const Color(0xFFA855F7).withOpacity(0.25),
-                              const Color(0xFFFB923C).withOpacity(0.2),
-                              Colors.transparent,
-                            ],
+                      colors: [
+                        const Color(0xFF38BDF8).withOpacity(0.3),
+                        const Color(0xFFA855F7).withOpacity(0.25),
+                        const Color(0xFFFB923C).withOpacity(0.2),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
                 ),
@@ -237,13 +157,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       children: [
                         const SizedBox(height: 28),
 
-                        // ── Live AI Status Banner (only shown during voice/text actions) ─────────────────────
-                        if (_isRecording || _isProcessing || _statusLabel.isNotEmpty && _statusLabel != 'What can I help with?') ...[
+                        // ── Live AI Status Banner ─────────────────────
+                        if (_isProcessing || _statusLabel.isNotEmpty && _statusLabel != 'What can I help with?') ...[
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
                             child: Text(
-                              _isRecording ? 'Listening...' : (_isProcessing ? 'Processing...' : _statusLabel),
-                              key: ValueKey(_isRecording ? 'l' : (_isProcessing ? 'p' : _statusLabel)),
+                              _isProcessing ? 'Processing...' : _statusLabel,
+                              key: ValueKey(_isProcessing ? 'p' : _statusLabel),
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
@@ -292,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         // ── Text Input ───────────────────────────────────────
                         _TextInputBar(
                           controller: _textController,
-                          enabled: !_isProcessing && !_isRecording,
+                          enabled: !_isProcessing,
                           onSend: _sendText,
                         ).animate().fadeIn(duration: 350.ms, delay: 300.ms),
 
@@ -302,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
 
-                // ── Gemini label + Mic button ─────────────────────────────
+                // ── AI ENGINE Label + Connection Status ─────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Column(
@@ -344,78 +264,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           fontFamily: 'Montserrat',
                           color: AppColors.onSurfaceVariant,
                           letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      // Mic button
-                      GestureDetector(
-                        onTapDown: (_) => _startRecording(),
-                        onTapUp: (_) => _stopAndSend(),
-                        onTapCancel: () => _stopAndSend(),
-                        child: AnimatedBuilder(
-                          animation: _pulseController,
-                          builder: (context, child) {
-                            final scale = _isRecording
-                                ? 1.0 + (_pulseController.value * 0.12)
-                                : 1.0;
-                            return Transform.scale(scale: scale, child: child);
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: 68,
-                            height: 68,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _isRecording
-                                  ? AppColors.crimsonMuted
-                                  : AppColors.surfaceContainerHigh,
-                              border: Border.all(
-                                color: _isRecording
-                                    ? const Color(0xFFDC2626).withOpacity(0.5)
-                                    : AppColors.outlineVariant,
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                if (_isRecording)
-                                  BoxShadow(
-                                    color: const Color(0xFFDC2626).withOpacity(0.4),
-                                    blurRadius: 20,
-                                    spreadRadius: 4,
-                                  ),
-                              ],
-                            ),
-                            child: Center(
-                              child: _isProcessing
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(AppColors.solarMuted),
-                                      ),
-                                    )
-                                  : Icon(
-                                      _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
-                                      color: _isRecording ? Colors.white : AppColors.primary,
-                                      size: 30,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        _isRecording
-                            ? 'Release to send'
-                            : _isProcessing
-                                ? 'Processing...'
-                                : 'Hold to speak',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: AppColors.outlineVariant,
                         ),
                       ),
                     ],

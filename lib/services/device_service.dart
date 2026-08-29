@@ -13,9 +13,7 @@ class DeviceState {
 class DeviceService {
   IO.Socket? _socket;
   final Map<String, bool> devices = {
-    'fan': false,
     'light': false,
-    'motor': false,
   };
   bool connected = false;
   final List<Function()> _listeners = [];
@@ -98,22 +96,6 @@ class DeviceService {
     }
   }
 
-  Future<Map<String, dynamic>> sendAudio(String base64Audio, {String mimeType = 'audio/m4a'}) async {
-    try {
-      final res = await http.post(
-        Uri.parse('$backendUrl/api/command/audio'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'audioBase64': base64Audio,
-          'mimeType': mimeType,
-        }),
-      );
-      return json.decode(res.body);
-    } catch (e) {
-      return {'success': false, 'error': e.toString()};
-    }
-  }
-
   Future<void> toggleDevice(String name) async {
     final newStatus = !(devices[name] ?? false);
     devices[name] = newStatus;
@@ -125,75 +107,5 @@ class DeviceService {
         body: json.encode({'status': newStatus, 'source': 'manual'}),
       );
     } catch (_) {}
-  }
-
-  Future<Map<String, dynamic>?> getAnalytics() async {
-    try {
-      final res = await http.get(Uri.parse('$backendUrl/api/analytics'));
-      if (res.statusCode == 200) {
-        return json.decode(res.body) as Map<String, dynamic>;
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  Future<List<Map<String, dynamic>>> getSchedules() async {
-    try {
-      final res = await http.get(Uri.parse('$backendUrl/api/schedule'));
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        return List<Map<String, dynamic>>.from(data['schedules'] ?? []);
-      }
-    } catch (_) {}
-    return [];
-  }
-
-  Future<Map<String, dynamic>> scheduleDevice({
-    required String name,
-    required String action,
-    required String time,
-    required List<String> days,
-    required String label,
-  }) async {
-    try {
-      final res = await http.post(
-        Uri.parse('$backendUrl/api/schedule'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'device': name,
-          'action': action,
-          'time': time,
-          'days': days,
-          'label': label,
-        }),
-      );
-      return json.decode(res.body);
-    } catch (e) {
-      return {'success': false, 'error': e.toString()};
-    }
-  }
-
-  Future<bool> deleteSchedule(String id) async {
-    try {
-      final res = await http.delete(Uri.parse('$backendUrl/api/schedule/$id'));
-      if (res.statusCode == 200) {
-        final data = json.decode(res.body);
-        return data['success'] == true;
-      }
-    } catch (_) {}
-    return false;
-  }
-
-  Future<Map<String, dynamic>?> toggleSchedule(String id) async {
-    try {
-      final res = await http.patch(
-        Uri.parse('$backendUrl/api/schedule/$id/toggle'),
-        headers: {'Content-Type': 'application/json'},
-      );
-      if (res.statusCode == 200) {
-        return json.decode(res.body);
-      }
-    } catch (_) {}
-    return null;
   }
 }
