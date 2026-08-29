@@ -32,9 +32,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _glowAnim;
 
   final deviceConfig = {
-    'fan': {'icon': Icons.air_rounded, 'label': 'Ceiling Fan', 'sub': 'Bedroom'},
-    'light': {'icon': Icons.lightbulb_rounded, 'label': 'Smart Light', 'sub': 'Living Room'},
-    'motor': {'icon': Icons.water_drop_rounded, 'label': 'Water Pump', 'sub': 'Utility'},
+    'light': {'icon': Icons.lightbulb_rounded, 'label': 'Smart Light Bulb', 'sub': 'Living Room • Live Demo'},
   };
 
   @override
@@ -207,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'SmartHome AI',
+                        'Smart Light AI',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,

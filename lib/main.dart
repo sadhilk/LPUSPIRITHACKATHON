@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
-import 'screens/analytics_screen.dart';
-import 'screens/schedule_screen.dart';
 import 'services/device_service.dart';
 
 void main() {
@@ -11,7 +9,7 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF0D0E12),
+    systemNavigationBarColor: Color(0xFF050A08),
     systemNavigationBarIconBrightness: Brightness.light,
   ));
   runApp(const SmartHomeApp());
@@ -36,13 +34,32 @@ class AppColors {
   static const greenActive = Color(0xFF34D399);              // Royal Emerald Mint
 }
 
-class SmartHomeApp extends StatelessWidget {
+class SmartHomeApp extends StatefulWidget {
   const SmartHomeApp({super.key});
+
+  @override
+  State<SmartHomeApp> createState() => _SmartHomeAppState();
+}
+
+class _SmartHomeAppState extends State<SmartHomeApp> {
+  final DeviceService _deviceService = DeviceService();
+
+  @override
+  void initState() {
+    super.initState();
+    _deviceService.connect();
+  }
+
+  @override
+  void dispose() {
+    _deviceService.disconnect();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SmartHome AI',
+      title: 'Smart Bulb AI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: const ColorScheme.dark(
@@ -54,160 +71,10 @@ class SmartHomeApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.background,
         useMaterial3: true,
         textTheme: GoogleFonts.montserratTextTheme(ThemeData.dark().textTheme),
-        dialogBackgroundColor: AppColors.surfaceContainerLow,
-        bottomSheetTheme: const BottomSheetThemeData(
-          backgroundColor: AppColors.surfaceContainerLow,
-        ),
       ),
-      home: const MainScreen(),
+      home: HomeScreen(deviceService: _deviceService),
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
-  int _currentIndex = 0;
-  final DeviceService _deviceService = DeviceService();
-  late AnimationController _navAnimController;
-
-  @override
-  void initState() {
-    super.initState();
-    _deviceService.connect();
-    _navAnimController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-  }
-
-  @override
-  void dispose() {
-    _deviceService.disconnect();
-    _navAnimController.dispose();
-    super.dispose();
-  }
-
-  void _onTabTap(int index) {
-    if (index == _currentIndex) return;
-    HapticFeedback.selectionClick();
-    setState(() => _currentIndex = index);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screens = [
-      HomeScreen(deviceService: _deviceService),
-      AnalyticsScreen(deviceService: _deviceService),
-      ScheduleScreen(deviceService: _deviceService),
-    ];
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
-      ),
-      bottomNavigationBar: _LuminaBottomNav(
-        currentIndex: _currentIndex,
-        onTap: _onTabTap,
-      ),
-    );
-  }
-}
-
-class _LuminaBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
-
-  const _LuminaBottomNav({required this.currentIndex, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
-        border: Border(
-          top: BorderSide(color: AppColors.outlineVariant.withOpacity(0.5), width: 0.5),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(index: 0, currentIndex: currentIndex, icon: Icons.home_rounded, label: 'Home', onTap: onTap),
-              _NavItem(index: 1, currentIndex: currentIndex, icon: Icons.insights_rounded, label: 'Analytics', onTap: onTap),
-              _NavItem(index: 2, currentIndex: currentIndex, icon: Icons.tune_rounded, label: 'Schedule', onTap: onTap),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final int index;
-  final int currentIndex;
-  final IconData icon;
-  final String label;
-  final ValueChanged<int> onTap;
-
-  const _NavItem({
-    required this.index,
-    required this.currentIndex,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isActive = index == currentIndex;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => onTap(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.surfaceContainerHigh : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedScale(
-              scale: isActive ? 1.1 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                icon,
-                color: isActive ? AppColors.solarMuted : AppColors.outlineVariant,
-                size: 22,
-              ),
-            ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.05,
-                color: isActive ? AppColors.solarMuted : AppColors.outlineVariant,
-                fontFamily: 'Montserrat',
-              ),
-              child: Text(label.toUpperCase()),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
