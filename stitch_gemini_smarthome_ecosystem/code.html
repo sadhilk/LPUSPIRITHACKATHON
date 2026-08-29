@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartHome AI - Remote Control</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Montserrat:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#0d0e12",
+                        "on-secondary-container": "#b6b8bd",
+                        "on-secondary": "#2e3135",
+                        "secondary": "#c4c6cb",
+                        "on-secondary-fixed": "#191c20",
+                        "error-container": "#93000a",
+                        "tertiary-fixed": "#e0e3e9",
+                        "outline-variant": "#45474a",
+                        "on-tertiary-container": "#7b7f84",
+                        "on-tertiary-fixed-variant": "#43474c",
+                        "primary-fixed": "#e2e2e6",
+                        "inverse-primary": "#5d5e62",
+                        "on-surface": "#e3e2e7",
+                        "inverse-surface": "#e3e2e7",
+                        "surface-container-high": "#292a2e",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#121417",
+                        "surface-container": "#1e1f23",
+                        "surface-container-low": "#1a1b1f",
+                        "primary-fixed-dim": "#c6c6ca",
+                        "outline": "#8f9094",
+                        "secondary-container": "#46494d",
+                        "surface": "#121317",
+                        "secondary-fixed": "#e1e2e7",
+                        "on-primary-container": "#7d7e82",
+                        "on-primary-fixed": "#1a1c1f",
+                        "on-background": "#e3e2e7",
+                        "on-tertiary": "#2d3136",
+                        "surface-container-highest": "#343539",
+                        "tertiary-container": "#101418",
+                        "primary": "#c6c6ca",
+                        "surface-dim": "#121317",
+                        "solar-muted": "#D4AF37",
+                        "surface-variant": "#343539",
+                        "secondary-fixed-dim": "#c4c6cb",
+                        "crimson-muted": "#B22222",
+                        "inverse-on-surface": "#2f3034",
+                        "background": "#121317",
+                        "tertiary-fixed-dim": "#c3c7cd",
+                        "on-primary": "#2f3034",
+                        "on-secondary-fixed-variant": "#44474b",
+                        "surface-bright": "#38393d",
+                        "slate-gradient-stop": "#3E444B",
+                        "on-surface-variant": "#c6c6ca",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#45474a",
+                        "on-tertiary-fixed": "#181c20",
+                        "surface-tint": "#c6c6ca",
+                        "on-error": "#690005",
+                        "tertiary": "#c3c7cd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "margin-desktop": "48px",
+                        "margin-mobile": "20px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "lg": "40px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Montserrat"],
+                        "label-md": ["Montserrat"],
+                        "body-sm": ["Montserrat"],
+                        "display-lg": ["Montserrat"],
+                        "display-lg-mobile": ["Montserrat"],
+                        "headline-sm": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-md": ["Montserrat"],
+                        "body-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .gemini-glow {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150%;
+            height: 300px;
+            background: radial-gradient(circle at 50% 100%, 
+                rgba(56, 189, 248, 0.4) 0%, 
+                rgba(168, 85, 247, 0.4) 25%, 
+                rgba(251, 146, 60, 0.4) 50%, 
+                transparent 70%);
+            filter: blur(40px);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-glow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+        }
+
+        .glass-card {
+            background: rgba(41, 42, 46, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#1c1d21] text-on-background font-body-md min-h-screen flex flex-col pb-safe antialiased selection:bg-surface-bright selection:text-solar-muted overflow-x-hidden relative">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-transparent hidden md:flex justify-between items-center px-margin-desktop h-16">
+<div class="flex items-center gap-gutter">
+<h1 class="font-display-lg text-display-lg text-on-surface">Aura Home</h1>
+</div>
+<div class="flex items-center gap-gutter">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">settings_suggest</span>
+</button>
+<img alt="User profile avatar" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container" data-alt="A small circular user profile avatar showing a professional looking person in a tech setting, glowing softly against a dark background, complementing the dark mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAWUwxsLSdpdu1-1Uw4UrVqPjgDyQnmmidChOZQ3iWPZapnLiwthe5bl3lT0yCx7dM52qNEf5nhLRWOv-G_LgGghPxkzx8_H6SXf4JDFJE_dOF18UUCS-xJvKBg9uRqaIWl0VnPWHhGlgXd9HsJ_JP69N4HnV92-OxSwMzUuDt-tvtimfSqntYpn6Pz34IBa3UPHnQtaCSxf57BSHh04xB2oQjKZx9CR_ChSh0U73_VJ6PRFEaW_FOZg"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col pt-12 md:pt-24 pb-32 px-margin-mobile md:px-margin-desktop w-full max-w-md mx-auto space-y-md relative z-10">
+<!-- Top App Bar Mobile Only (Simulated within content for this specific mobile-first design prompt request) -->
+<div class="w-full flex justify-between items-center md:hidden mb-4">
+<h1 class="font-headline-md text-headline-md text-on-surface">SmartHome AI</h1>
+<img alt="User profile avatar" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-highest" data-alt="A small circular user profile avatar showing a professional looking person in a tech setting, glowing softly against a dark background, complementing the dark mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9A8Vb78PPGGnJPSJw6ykENptsaP8Z5zSwSgEsxK6R4lcC8GsprwJ5ix1O3L6R1qRqOtQ2CzlNXrvRbvsps6OsM5fvEy7XfiGzj1tINXbq6ysYnWKjUdWILta4RjuLC39IfMzoJHBdble5GZkk6ML9dVwq5FzgNnT1ghc8HQF98DxUnHeDsjRcuQ9ExW6BZVzZLNXok8WqNBF0lF21RTuGVX_3hoPt1Ti_vuqVjpIwlXsCjV3QBp-jFQ"/>
+</div>
+<!-- Listening Headline -->
+<div class="w-full mb-6">
+<h2 class="font-display-lg-mobile text-[36px] leading-[44px] text-on-surface font-semibold mb-2">Listening...</h2>
+<p class="font-headline-md text-on-surface-variant font-normal">What can I<br/>help with?</p>
+</div>
+<!-- Device Cards List -->
+<section class="w-full flex flex-col gap-3">
+<!-- Light Card (Active) -->
+<div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">lightbulb</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">Lights</h3>
+<p class="font-body-sm text-on-surface-variant">On (Living Room)</p>
+</div>
+</div>
+<div class="w-12 h-7 bg-green-500/80 rounded-full relative cursor-pointer shadow-[0_0_15px_rgba(34,197,94,0.5)]">
+<div class="absolute right-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+<!-- Thermostat Card -->
+<div class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">thermostat</span>
+</div>
+<div>
+<h3 class="font-body-md font-semibold text-on-surface">Thermostat</h3>
+<p class="font-body-sm text-on-surface-variant">72°F</p>
+</div>
+</div>
+<span class="font-headline-sm text-on-surface font-semibold">72°</span>
+</div>
+<!-- Music Card -->
+<div class="glass-card rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface">music_note</span>
+</div>
+<div class="overflow-hidden">
+<h3 class="font-body-md font-semibold text-on-surface">Music</h3>
+<p class="font-body-sm text-on-surface-variant truncate">Playing "The Dark Side" by Muse</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Gemini Glow Effect -->
+<div class="gemini-glow"></div>
+<!-- Central Interaction Name -->
+<div class="fixed bottom-24 w-full flex justify-center z-20 md:hidden">
+<span class="font-headline-sm text-white/90 font-semibold tracking-wide">Gemini</span>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full bg-transparent flex justify-around items-center px-margin-mobile pb-6 pt-4 h-20 z-50 md:hidden">
+<a class="flex flex-col items-center justify-center text-white/70 active:scale-90 transition-transform hover:text-white" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/70 active:scale-90 transition-transform hover:text-white" href="#">
+<span class="material-symbols-outlined">insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-white/70 active:scale-90 transition-transform hover:text-white" href="#">
+<span class="material-symbols-outlined">tune</span>
+</a>
+</nav>
+<!-- Home Indicator (iOS style) -->
+<div class="fixed bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/80 rounded-full z-50 md:hidden"></div>
+</body></html>
